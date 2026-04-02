@@ -1,0 +1,11 @@
+:root {
+  --page-bg: #f5efe2;
+  --page-ink: #1f2430;
+  --muted-ink: #66604f;
+  --panel-bg: rgba(255, 252, 244, 0.92);
+  --panel-border: rgba(48, 54, 66, 0.12);
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --accent-soft: rgba(15, 118, 110, 0.12);
+  --shadow-soft: 0 20px 60px rgba(29, 37, 51, 0.08);
+}
