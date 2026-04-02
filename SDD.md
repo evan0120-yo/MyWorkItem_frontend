@@ -154,6 +154,7 @@ Frontend/MyWorkItem.App/src
   - DataState 區塊
   - WorkItemTable
   - WorkItemForm
+  - SuccessNotice
   - UserSwitcher
 
 ## Route 設計
@@ -222,6 +223,7 @@ local UI state
 │
 ├─ list 已勾選 ids
 ├─ create / edit form 值
+├─ page success message
 ├─ sort UI 控制值
 └─ mock current user
 ```
@@ -297,8 +299,10 @@ work-item detail
 ├─ useWorkItemsQuery
 │  └─ GET /api/work-items
 ├─ 本地維護 selectedWorkItemIds
-└─ useConfirmWorkItemsMutation
-   └─ POST /api/work-items/confirm
+├─ useConfirmWorkItemsMutation
+│  └─ POST /api/work-items/confirm
+└─ useRevertWorkItemConfirmationMutation
+   └─ POST /api/work-items/{id}/revert-confirmation
 ```
 
 ### 使用者詳情頁
@@ -307,6 +311,7 @@ work-item detail
 /work-items/:id
 │
 ├─ 讀取 path param: id
+├─ 保留原本 search param 作為返回列表依據
 ├─ useWorkItemDetailQuery
 │  └─ GET /api/work-items/{id}
 └─ useRevertWorkItemConfirmationMutation
@@ -368,7 +373,8 @@ confirm 成功
 │
 ├─ 清空 selectedWorkItemIds
 ├─ invalidate ['work-items', *]
-└─ invalidate 受影響的 ['work-item', { userId, workItemId }]
+├─ invalidate 受影響的 ['work-item', { userId, workItemId }]
+└─ page 顯示 success notice
 ```
 
 ### revert
@@ -377,7 +383,8 @@ confirm 成功
 revert 成功
 │
 ├─ invalidate ['work-items', *]
-└─ invalidate ['work-item', { userId, workItemId }]
+├─ invalidate ['work-item', { userId, workItemId }]
+└─ page 顯示 success notice
 ```
 
 ### create
@@ -386,7 +393,7 @@ revert 成功
 create 成功
 │
 ├─ invalidate ['work-items', *]
-└─ navigate -> /admin/work-items
+└─ navigate -> /admin/work-items with success message
 ```
 
 ### update
@@ -396,7 +403,7 @@ update 成功
 │
 ├─ invalidate ['work-items', *]
 ├─ invalidate ['work-item', { userId, workItemId }]
-└─ navigate -> /admin/work-items
+└─ navigate -> /admin/work-items with success message
 ```
 
 ### delete
@@ -406,7 +413,7 @@ delete 成功
 │
 ├─ invalidate ['work-items', *]
 ├─ remove / ignore deleted detail cache
-└─ stay on admin list page
+└─ stay on admin list page and show success notice
 ```
 
 ## 表單設計
@@ -421,8 +428,10 @@ delete 成功
 - `title`
   - required
   - trim 後不可空
+  - trim 後長度不可超過 200
 - `description`
   - 可空
+  - trim 後長度不可超過 2000
 
 表單用途：
 - create 與 update 共用同一個表單元件
@@ -448,6 +457,12 @@ forbidden
 
 - 不吞錯。
 - 不把 loading / empty / error 混成同一種狀態。
+
+## 成功提示設計
+
+- confirm / revert 成功後，由目前 page 顯示成功提示。
+- admin create / update 成功後，透過 navigation state 帶成功訊息回 admin 列表頁。
+- admin delete 成功後，留在 admin 列表頁並顯示成功提示。
 
 ## mock auth 設計
 
@@ -497,4 +512,3 @@ App 初始化
 - 列表排序 UI 最終元件形式。
 - 是否需要顯示全選功能。
 - admin 列表是否需要更多欄位。
-- 是否要在 admin create / update / delete 成功後顯示 toast。

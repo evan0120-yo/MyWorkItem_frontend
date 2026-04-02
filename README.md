@@ -4,7 +4,7 @@
 
 - 文件：Frontend/Development.md、Frontend/Question.md
 - 前端專案：Frontend/MyWorkItem.App
-- 目前只建立專案結構與啟動設定，尚未開始實作業務頁面與串接流程
+- 目前已完成 user flow、admin CRUD、mock user switcher、API 串接與頁面測試
 
 ## 目前專案方向
 
@@ -91,14 +91,55 @@ npm run dev
 
 ## 目前狀態
 
-- 已建立 React + TypeScript + Vite 專案結構
-- 已接好 Tailwind 基本設定
-- 已放入 TanStack Query 與 React Router 依賴
-- 已預留 user flow / admin flow 的 feature 資料夾
-- 尚未開始實作實際頁面、路由與 API 流程
+- 已完成 React + TypeScript + Vite SPA
+- 已完成 user list / detail / confirm / revert
+- 已完成列表內的 revert confirmation、selected row 高亮與成功提示
+- 已完成 admin list / create / edit / delete
+- 已完成 create / update / delete 成功回到列表後的 success message
+- 已完成 mock user switcher 與 localStorage 同步
+- 已完成 native fetch + TanStack Query API 串接
+- 已補前端頁面測試與 live API smoke test
+
+## 測試方式
+
+一般測試：
+
+```powershell
+cd Frontend\MyWorkItem.App
+npm run test
+```
+
+建置檢查：
+
+```powershell
+cd Frontend\MyWorkItem.App
+npm run build
+```
+
+live backend smoke test：
+
+```powershell
+cd Backend
+dotnet run --project .\MyWorkItem.Api\MyWorkItem.Api.csproj --launch-profile http
+```
+
+另開一個終端：
+
+```powershell
+cd Frontend\MyWorkItem.App
+$env:LIVE_API_SMOKE='1'
+npm run test -- --run src/app/router/__tests__/LiveApiSmoke.test.tsx
+```
+
+這個 smoke test 會直接渲染前端頁面並打 live backend，驗證：
+
+- admin create / edit / delete
+- user confirm / revert
+- 不同使用者的個人 status 隔離
+- 刪除後 detail not found
 
 ## 下一步建議
 
-- 先補 BDD / SDD / TDD 文件
-- 先決定第一條要落地的垂直流程
-- 再把該流程一次做完，不先鋪半成品
+- 補 PostgreSQL integration tests
+- 視需要再補真正瀏覽器層的 E2E 自動化
+- Phase 2 若要正式化，再補 JWT 與正式授權

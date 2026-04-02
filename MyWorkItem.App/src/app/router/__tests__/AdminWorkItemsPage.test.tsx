@@ -69,6 +69,9 @@ describe('AdminWorkItemsPage', () => {
     })
 
     expect(screen.getByText('Work Item 2')).toBeInTheDocument()
+    expect(
+      screen.getByText('Deleted the work item successfully.'),
+    ).toBeInTheDocument()
     expect(window.confirm).toHaveBeenCalledTimes(1)
   })
 

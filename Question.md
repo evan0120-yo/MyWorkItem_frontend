@@ -16,21 +16,27 @@
 - 權限策略：
   - Phase 1：Mock 權限 / user switcher
   - Phase 2：若有時間，再配合後端補 JWT
-
-## 目前未定
-
-- admin UI 是否放在同一個 React App 中
-
-## 待確認
-
-- 前台列表是否必須顯示「編號」欄
-- 詳情頁是否一定要顯示「建立時間」與「最後更新時間」
-- admin 端應做成單頁整合，還是拆成 /admin/work-items/new、/admin/work-items/{id}/edit
-- 前台有 UI、後台只有 API 的情況，是否仍符合整體題目要求
-
-## 待我們自己決定
-
-- 是否由同一套前端處理前台與 admin 路由
+- 前台與 admin 放在同一個 React SPA
+- route 採：
+  - /work-items
+  - /work-items/:id
+  - /admin/work-items
+  - /admin/work-items/new
+  - /admin/work-items/:id/edit
+- 前台列表顯示 id / title / status
+- 詳情頁顯示 createdAt / updatedAt / status
+- 詳情與列表的 status 都以目前 mock current user 的個人狀態解讀
+- admin list 與 admin edit 的讀取流程先重用一般 read API
+- 本機聯調需要 backend 放行 `http://localhost:5173` 與 `http://127.0.0.1:5173` 的 CORS
+- 因為 request 會帶 `X-Mock-*` headers，所以瀏覽器一定會先做 preflight
+- 使用者列表中 `Confirmed` 項目需直接提供 revert action
+- 詳情頁也保留 revert action，作為額外的單筆操作入口
+- success feedback 採頁面內 success notice，而不是 toast library 或 modal
+- 詳情頁返回列表時，至少保留 `sortDirection` query
+- pagination 目前仍不實作，因為題目只明寫「若有分頁則返回時保留」，而是否必做已另列待確認
+- admin 表單先在前端做基本長度驗證，與後端 / DB 對齊：
+  - `Title <= 200`
+  - `Description <= 2000`
 
 ## 討論筆記
 
@@ -63,6 +69,18 @@
 - 為本題目前決定：
   - 使用原生 fetch
   - 搭配 TanStack Query
+- admin UI 放在同一個 React App：
+  - 理由是這題主要是同一組 Work Item 流程
+  - 同 SPA 可以直接共用 router、mock auth、query keys 與 read hooks
+- admin route 採獨立路由而不是單頁整合：
+  - 理由是 create / edit / list 的狀態邊界比較清楚
+  - 對 route、測試與錯誤狀態表達也比較直接
+- 詳情頁顯示 createdAt / updatedAt：
+  - 因為後端 detail API 已提供這兩個欄位
+  - 題目文字也支持顯示這些欄位
+- status 採個人狀態解讀：
+  - 因為後端回傳本來就是目前使用者視角
+  - 前端不額外推導全域狀態
 - 簡短理由：
   - 保留 RESTful API 邊界清楚
   - 不額外引入 axios

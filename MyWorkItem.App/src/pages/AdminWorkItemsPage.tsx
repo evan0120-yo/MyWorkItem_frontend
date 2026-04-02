@@ -1,20 +1,38 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { StatePanel } from '../components/StatePanel'
+import { SuccessNotice } from '../components/SuccessNotice'
 import { WorkItemTable } from '../components/WorkItemTable'
 import { useDeleteWorkItemMutation } from '../features/admin-work-items/useDeleteWorkItemMutation'
 import { useMockAuth } from '../features/auth-mock/MockAuthContext'
 import { useWorkItemsQuery } from '../features/work-items/useWorkItemsQuery'
 
+type AdminNavigationState = {
+  successMessage?: string
+}
+
 export function AdminWorkItemsPage() {
+  const location = useLocation()
   const navigate = useNavigate()
   const { currentUser } = useMockAuth()
   const workItemsQuery = useWorkItemsQuery(currentUser, 'desc')
   const deleteMutation = useDeleteWorkItemMutation(currentUser)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [pendingDeleteWorkItemId, setPendingDeleteWorkItemId] = useState<
     string | null
   >(null)
+
+  useEffect(() => {
+    const navigationState = location.state as AdminNavigationState | null
+
+    if (!navigationState?.successMessage) {
+      return
+    }
+
+    setSuccessMessage(navigationState.successMessage)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate])
 
   async function handleDelete(workItemId: string) {
     if (deleteMutation.isPending) {
@@ -30,8 +48,10 @@ export function AdminWorkItemsPage() {
     }
 
     try {
+      setSuccessMessage(null)
       setPendingDeleteWorkItemId(workItemId)
       await deleteMutation.mutateAsync(workItemId)
+      setSuccessMessage('Deleted the work item successfully.')
     } catch {
       // Mutation state owns the UI error display.
     } finally {
@@ -66,6 +86,8 @@ export function AdminWorkItemsPage() {
           </button>
         </div>
       </section>
+
+      {successMessage ? <SuccessNotice message={successMessage} /> : null}
 
       {deleteMutation.isError ? <ErrorNotice error={deleteMutation.error} /> : null}
 

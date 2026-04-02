@@ -1,11 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { StatePanel } from '../components/StatePanel'
+import { SuccessNotice } from '../components/SuccessNotice'
 import { WorkItemTable } from '../components/WorkItemTable'
 import { useMockAuth } from '../features/auth-mock/MockAuthContext'
 import { useConfirmWorkItemsMutation } from '../features/work-items/useConfirmWorkItemsMutation'
 import { useListSelection } from '../features/work-items/useListSelection'
+import { useRevertWorkItemConfirmationMutation } from '../features/work-items/useRevertWorkItemConfirmationMutation'
 import { useWorkItemsQuery } from '../features/work-items/useWorkItemsQuery'
 import type { SortDirection } from '../types/work-item'
 
@@ -17,6 +19,8 @@ export function WorkItemsPage() {
   const navigate = useNavigate()
   const { currentUser } = useMockAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [pendingRevertId, setPendingRevertId] = useState<string | null>(null)
   const sortDirection = resolveSortDirection(searchParams.get('sortDirection'))
   const { selectedIds, toggleSelection, clearSelection, toggleSelectAll } =
     useListSelection()
@@ -24,20 +28,57 @@ export function WorkItemsPage() {
   const confirmMutation = useConfirmWorkItemsMutation(currentUser, {
     onSuccess: clearSelection,
   })
+  const revertMutation = useRevertWorkItemConfirmationMutation(currentUser)
 
   const items = workItemsQuery.data?.items ?? []
 
   useEffect(() => {
     clearSelection()
+    setSuccessMessage(null)
   }, [clearSelection, currentUser.userId, sortDirection])
 
   async function handleConfirm() {
+    const confirmedCount = selectedIds.length
+
     try {
+      setSuccessMessage(null)
       await confirmMutation.mutateAsync(selectedIds)
+      setSuccessMessage(
+        confirmedCount === 1
+          ? 'Successfully confirmed 1 work item.'
+          : `Successfully confirmed ${confirmedCount} work items.`,
+      )
     } catch {
       // Mutation state owns the UI error display.
     }
   }
+
+  async function handleRevert(workItemId: string) {
+    if (revertMutation.isPending) {
+      return
+    }
+
+    const shouldRevert = window.confirm(
+      "Mark this work item back to 'Pending' for the current user?",
+    )
+
+    if (!shouldRevert) {
+      return
+    }
+
+    try {
+      setSuccessMessage(null)
+      setPendingRevertId(workItemId)
+      await revertMutation.mutateAsync(workItemId)
+      setSuccessMessage('Marked the selected work item back to pending.')
+    } catch {
+      // Mutation state owns the UI error display.
+    } finally {
+      setPendingRevertId(null)
+    }
+  }
+
+  const detailSearch = searchParams.toString()
 
   return (
     <div className="space-y-6">
@@ -102,9 +143,21 @@ export function WorkItemsPage() {
             </p>
           </div>
 
+          {successMessage ? (
+            <div className="mt-4">
+              <SuccessNotice message={successMessage} />
+            </div>
+          ) : null}
+
           {confirmMutation.isError ? (
             <div className="mt-4">
               <ErrorNotice error={confirmMutation.error} />
+            </div>
+          ) : null}
+
+          {revertMutation.isError ? (
+            <div className="mt-4">
+              <ErrorNotice error={revertMutation.error} />
             </div>
           ) : null}
 
@@ -151,7 +204,22 @@ export function WorkItemsPage() {
           selectedIds={selectedIds}
           onToggleSelection={toggleSelection}
           onToggleSelectAll={() => toggleSelectAll(items.map((item) => item.id))}
-          onTitleClick={(workItemId) => navigate(`/work-items/${workItemId}`)}
+          showActions
+          actionLabel="Revert confirmation"
+          shouldShowAction={(item) => item.status === 'Confirmed'}
+          getActionLabel={(item) =>
+            pendingRevertId === item.id ? 'Reverting...' : 'Revert confirmation'
+          }
+          isActionDisabled={(item) =>
+            revertMutation.isPending && pendingRevertId === item.id
+          }
+          onAction={handleRevert}
+          onTitleClick={(workItemId) =>
+            navigate({
+              pathname: `/work-items/${workItemId}`,
+              search: detailSearch ? `?${detailSearch}` : '',
+            })
+          }
         />
       ) : null}
     </div>

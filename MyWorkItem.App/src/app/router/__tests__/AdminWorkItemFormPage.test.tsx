@@ -27,6 +27,24 @@ describe('AdminWorkItemFormPage', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('AdminWorkItemCreatePage_WhenTitleIsTooLong_ShowsValidationErrorWithoutRequest', async () => {
+    const fetchMock = mockFetchSequence([])
+
+    renderApp('/admin/work-items/new', { currentUser: defaultMockUsers[2] })
+
+    fireEvent.change(screen.getByLabelText('Title'), {
+      target: { value: 'A'.repeat(201) },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+    await screen.findByText('Title must be 200 characters or fewer.')
+
+    expect(
+      screen.getByText('Title must be 200 characters or fewer.'),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('AdminWorkItemCreatePage_WhenSubmitSucceeds_NavigatesBackToAdminList', async () => {
     mockFetchSequence([
       jsonResponse({
@@ -53,6 +71,7 @@ describe('AdminWorkItemFormPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create' }))
     await screen.findByText('Work item admin list')
     await screen.findByText('Created Item')
+    await screen.findByText('Created the work item successfully.')
 
     expect(screen.getByText('Work item admin list')).toBeInTheDocument()
     expect(screen.getByText('Created Item')).toBeInTheDocument()
@@ -87,6 +106,26 @@ describe('AdminWorkItemFormPage', () => {
     await screen.findByText('Title is required.')
 
     expect(screen.getByText('Title is required.')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('AdminWorkItemEditPage_WhenDescriptionIsTooLong_ShowsValidationErrorWithoutUpdateRequest', async () => {
+    const fetchMock = mockFetchSequence([jsonResponse(createDetailResponse())])
+
+    renderApp('/admin/work-items/wi-1/edit', { currentUser: defaultMockUsers[2] })
+
+    expect(await screen.findByDisplayValue('Work Item 1')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'D'.repeat(2001) },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+    await screen.findByText('Description must be 2000 characters or fewer.')
+
+    expect(
+      screen.getByText('Description must be 2000 characters or fewer.'),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
@@ -125,6 +164,7 @@ describe('AdminWorkItemFormPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
     await screen.findByText('Work item admin list')
     await screen.findByText('Updated Item')
+    await screen.findByText('Updated the work item successfully.')
 
     expect(screen.getByText('Work item admin list')).toBeInTheDocument()
     expect(screen.getByText('Updated Item')).toBeInTheDocument()

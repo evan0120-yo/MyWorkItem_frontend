@@ -12,7 +12,11 @@ type WorkItemFormProps = {
 
 type FieldErrors = {
   title?: string
+  description?: string
 }
+
+const titleMaxLength = 200
+const descriptionMaxLength = 2000
 
 export function WorkItemForm({
   mode,
@@ -39,9 +43,16 @@ export function WorkItemForm({
 
     const nextErrors: FieldErrors = {}
     const trimmedTitle = values.title.trim()
+    const trimmedDescription = values.description.trim()
 
     if (!trimmedTitle) {
       nextErrors.title = 'Title is required.'
+    } else if (trimmedTitle.length > titleMaxLength) {
+      nextErrors.title = `Title must be ${titleMaxLength} characters or fewer.`
+    }
+
+    if (trimmedDescription.length > descriptionMaxLength) {
+      nextErrors.description = `Description must be ${descriptionMaxLength} characters or fewer.`
     }
 
     setFieldErrors(nextErrors)
@@ -53,7 +64,7 @@ export function WorkItemForm({
     try {
       await onSubmit({
         title: trimmedTitle,
-        description: values.description.trim(),
+        description: trimmedDescription,
       })
     } catch {
       // Mutation state owns the UI error display.
@@ -82,6 +93,7 @@ export function WorkItemForm({
           <input
             type="text"
             value={values.title}
+            maxLength={titleMaxLength}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
@@ -102,6 +114,7 @@ export function WorkItemForm({
           </span>
           <textarea
             value={values.description}
+            maxLength={descriptionMaxLength}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
@@ -112,6 +125,9 @@ export function WorkItemForm({
             className="w-full rounded-2xl border border-slate-900/10 bg-white px-4 py-3 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
             placeholder="Describe the work item"
           />
+          {fieldErrors.description ? (
+            <p className="text-sm text-amber-900">{fieldErrors.description}</p>
+          ) : null}
         </label>
 
         {submitError ? <ErrorNotice error={submitError} /> : null}

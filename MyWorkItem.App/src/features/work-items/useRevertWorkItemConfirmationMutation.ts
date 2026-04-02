@@ -9,14 +9,14 @@ type RevertOptions = {
 
 export function useRevertWorkItemConfirmationMutation(
   currentUser: MockCurrentUser,
-  workItemId: string,
   options?: RevertOptions,
 ) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: () => revertWorkItemConfirmation(currentUser, workItemId),
-    onSuccess: async () => {
+    mutationFn: (workItemId: string) =>
+      revertWorkItemConfirmation(currentUser, workItemId),
+    onSuccess: async (_, workItemId) => {
       await queryClient.invalidateQueries({
         queryKey: workItemQueryKeys.allLists,
       })

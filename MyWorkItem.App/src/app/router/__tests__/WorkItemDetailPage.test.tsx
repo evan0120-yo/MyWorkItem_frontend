@@ -1,5 +1,6 @@
 import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
 import { renderApp } from '../../../test/renderApp'
 import {
   problemResponse,
@@ -52,6 +53,7 @@ describe('WorkItemDetailPage', () => {
 
   it('WorkItemDetailPage_WhenRevertSucceeds_RendersPendingState', async () => {
     const user = userEvent.setup()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockFetchSequence([
       jsonResponse(createDetailResponse('Confirmed')),
       jsonResponse({ workItemId: 'wi-1', status: 'Pending' }),
@@ -64,11 +66,13 @@ describe('WorkItemDetailPage', () => {
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'Revert confirmation' }))
     })
+    await screen.findByText('Marked the selected work item back to pending.')
     await screen.findByText('This item is already pending for the current user.')
 
     expect(
       screen.getByText('This item is already pending for the current user.'),
     ).toBeInTheDocument()
+    expect(window.confirm).toHaveBeenCalledTimes(1)
     expect(
       screen.queryByRole('button', { name: 'Revert confirmation' }),
     ).not.toBeInTheDocument()
@@ -76,6 +80,7 @@ describe('WorkItemDetailPage', () => {
 
   it('WorkItemDetailPage_WhenRevertFails_ShowsOperationError', async () => {
     const user = userEvent.setup()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockFetchSequence([
       jsonResponse(createDetailResponse('Confirmed')),
       problemResponse(404, 'Not Found', 'The confirmation record no longer exists.'),
@@ -95,5 +100,27 @@ describe('WorkItemDetailPage', () => {
     expect(
       screen.getByRole('button', { name: 'Revert confirmation' }),
     ).toBeInTheDocument()
+  })
+
+  it('WorkItemDetailPage_WhenBackClicked_RestoresTheOriginalSortQuery', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      jsonResponse(createDetailResponse('Pending')),
+      jsonResponse({
+        items: [{ id: 'wi-1', title: 'Work Item 1', status: 'Pending' }],
+      }),
+    ])
+
+    renderApp('/work-items/wi-1?sortDirection=asc', {
+      currentUser: defaultMockUsers[0],
+    })
+
+    await screen.findByText('Work Item 1')
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'Back to list' }))
+    })
+    await screen.findByRole('button', { name: 'Work Item 1' })
+
+    expect(fetchMock.mock.calls[1]?.[0]).toContain('/api/work-items?sortDirection=asc')
   })
 })

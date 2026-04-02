@@ -32,7 +32,12 @@ function AdminWorkItemCreateContent({
 }) {
   const navigate = useNavigate()
   const createMutation = useCreateWorkItemMutation(currentUser, {
-    onSuccess: () => navigate('/admin/work-items'),
+    onSuccess: () =>
+      navigate('/admin/work-items', {
+        state: {
+          successMessage: 'Created the work item successfully.',
+        },
+      }),
   })
 
   return (
@@ -59,7 +64,12 @@ function AdminWorkItemEditContent({
   const navigate = useNavigate()
   const detailQuery = useWorkItemDetailQuery(currentUser, workItemId)
   const updateMutation = useUpdateWorkItemMutation(currentUser, workItemId, {
-    onSuccess: () => navigate('/admin/work-items'),
+    onSuccess: () =>
+      navigate('/admin/work-items', {
+        state: {
+          successMessage: 'Updated the work item successfully.',
+        },
+      }),
   })
 
   if (detailQuery.isPending) {

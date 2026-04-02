@@ -1,6 +1,8 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { StatePanel } from '../components/StatePanel'
+import { SuccessNotice } from '../components/SuccessNotice'
 import { useMockAuth } from '../features/auth-mock/MockAuthContext'
 import { useRevertWorkItemConfirmationMutation } from '../features/work-items/useRevertWorkItemConfirmationMutation'
 import { useWorkItemDetailQuery } from '../features/work-items/useWorkItemDetailQuery'
@@ -17,11 +19,32 @@ function formatDateTime(value: string) {
 }
 
 export function WorkItemDetailPage() {
+  const location = useLocation()
   const navigate = useNavigate()
   const { id = '' } = useParams()
   const { currentUser } = useMockAuth()
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const detailQuery = useWorkItemDetailQuery(currentUser, id)
-  const revertMutation = useRevertWorkItemConfirmationMutation(currentUser, id)
+  const revertMutation = useRevertWorkItemConfirmationMutation(currentUser)
+  const returnPath = location.search ? `/work-items${location.search}` : '/work-items'
+
+  async function handleRevert() {
+    const shouldRevert = window.confirm(
+      "Mark this work item back to 'Pending' for the current user?",
+    )
+
+    if (!shouldRevert) {
+      return
+    }
+
+    try {
+      setSuccessMessage(null)
+      await revertMutation.mutateAsync(id)
+      setSuccessMessage('Marked the selected work item back to pending.')
+    } catch {
+      // Mutation state owns the UI error display.
+    }
+  }
 
   if (detailQuery.isPending) {
     return (
@@ -47,7 +70,7 @@ export function WorkItemDetailPage() {
           action={
             <button
               type="button"
-              onClick={() => navigate('/work-items')}
+              onClick={() => navigate(returnPath)}
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
             >
               Back to list
@@ -135,6 +158,12 @@ export function WorkItemDetailPage() {
           does not touch the global work item data.
         </p>
 
+        {successMessage ? (
+          <div className="mt-4">
+            <SuccessNotice message={successMessage} />
+          </div>
+        ) : null}
+
         {revertMutation.isError ? (
           <div className="mt-4">
             <ErrorNotice error={revertMutation.error} />
@@ -144,7 +173,7 @@ export function WorkItemDetailPage() {
         {item.status === 'Confirmed' ? (
           <button
             type="button"
-            onClick={() => revertMutation.mutate()}
+            onClick={handleRevert}
             disabled={revertMutation.isPending}
             className="mt-6 inline-flex w-full justify-center rounded-full bg-amber-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -158,7 +187,7 @@ export function WorkItemDetailPage() {
 
         <button
           type="button"
-          onClick={() => navigate('/work-items')}
+          onClick={() => navigate(returnPath)}
           className="mt-3 inline-flex w-full justify-center rounded-full border border-slate-900/10 bg-white px-5 py-3 text-sm font-semibold text-[var(--page-ink)] transition hover:bg-slate-900 hover:text-white"
         >
           Back to list

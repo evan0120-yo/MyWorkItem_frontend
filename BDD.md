@@ -87,6 +87,7 @@
 - checkbox 選取只屬於目前列表頁的 local UI state，不寫回後端。
 - confirm 成功後，前端需以最新 server state 重算列表 / 詳情畫面。
 - revert 成功後，前端需以最新 server state 重算列表 / 詳情畫面。
+- 使用者從詳情頁返回列表時，至少需保留原本的排序 query 狀態。
 - admin flow 只改 Work Item 主資料，不直接操作其他使用者的個人狀態。
 - admin 讀取頁若顯示 `status`，目前也只代表「目前 admin 自己的個人狀態」。
 - admin 列表頁 Phase 1 固定使用 `desc` 排序，不另外提供排序切換 UI。
@@ -179,6 +180,19 @@ Then
   該筆狀態正確顯示為 `Pending`
 ```
 
+### F-USER-003A 勾選列需有已選取視覺狀態
+
+```text
+Given
+  使用者位於 `/work-items`
+  且某筆 Work Item 已被勾選
+When
+  列表重新渲染
+Then
+  該列需有可辨識的已選取視覺狀態
+  例如背景色或文字狀態改變
+```
+
 ### F-USER-004 勾選多筆並確認
 
 ```text
@@ -194,6 +208,7 @@ Then
     - 清空目前勾選
     - 重新同步列表資料
     - 已受影響的項目顯示為 Confirmed
+    - 顯示成功提示訊息
 ```
 
 ### F-USER-004A confirm 失敗時保留目前畫面狀態
@@ -255,35 +270,49 @@ Then
   不顯示假資料
 ```
 
-### F-USER-008 在詳情頁撤銷確認
+### F-USER-008 在列表頁撤銷確認
 
 ```text
 Given
-  使用者位於 `/work-items/:id`
-  且目前 status 為 Confirmed
+  使用者位於 `/work-items`
+  且列表中存在 status = Confirmed 的 Work Item
 When
-  使用者送出撤銷確認
+  使用者在該列送出撤銷確認
 Then
   前端送出 revert request
   成功後：
-    - 詳情頁 status 更新為 Pending
+    - 該列 status 更新為 Pending
     - 列表資料同步更新
+    - 顯示成功提示訊息
 ```
 
-### F-USER-008A 撤銷確認失敗時保留原畫面
+### F-USER-008A 列表頁撤銷確認失敗時保留原畫面
 
 ```text
 Given
-  使用者位於 `/work-items/:id`
-  且目前 status 為 Confirmed
+  使用者位於 `/work-items`
+  且列表中存在 status = Confirmed 的 Work Item
 When
   revert request 失敗
 Then
   畫面顯示操作錯誤訊息
-  詳情頁維持原本狀態
+  列表維持原本狀態
 ```
 
-### F-USER-009 詳情頁沒有已確認狀態時不可撤銷
+### F-USER-009 詳情頁返回列表時保留排序 query
+
+```text
+Given
+  使用者從 `/work-items` 進入 `/work-items/:id`
+  且列表原本帶有排序 query
+When
+  使用者按返回列表
+Then
+  回到 `/work-items`
+  並保留原本排序 query
+```
+
+### F-USER-010 詳情頁沒有已確認狀態時不可撤銷
 
 ```text
 Given
@@ -293,6 +322,22 @@ When
   畫面渲染操作區
 Then
   不顯示或不可使用撤銷確認操作
+```
+
+### F-USER-010A 詳情頁在 Confirmed 時也可直接撤銷確認
+
+```text
+Given
+  使用者位於 `/work-items/:id`
+  且目前 status 為 Confirmed
+When
+  使用者在詳情頁送出撤銷確認
+Then
+  前端送出 revert request
+  成功後：
+    - 詳情頁 status 更新為 Pending
+    - 列表資料同步更新
+    - 顯示成功提示訊息
 ```
 
 ## 管理流程
@@ -330,6 +375,7 @@ Then
   前端送出 create request
   成功後導回 admin 列表頁
   並可看到新資料
+  並顯示成功提示訊息
 ```
 
 ### F-ADMIN-003 建立 Work Item 時 title 為空
@@ -339,6 +385,20 @@ Given
   目前 mock current user 為 Admin
 When
   使用者在建立頁提交空白 title
+Then
+  表單顯示驗證錯誤
+  不發送 create request
+```
+
+### F-ADMIN-003A 建立 Work Item 時欄位超過長度限制
+
+```text
+Given
+  目前 mock current user 為 Admin
+When
+  使用者在建立頁提交：
+    - title 超過 200 字
+    - 或 description 超過 2000 字
 Then
   表單顯示驗證錯誤
   不發送 create request
@@ -358,6 +418,7 @@ Then
   再送出 update request
   成功後導回 admin 列表頁
   並可看到更新後結果
+  並顯示成功提示訊息
   編輯表單只使用：
     - title
     - description
@@ -377,6 +438,21 @@ Then
   不顯示可提交的主表單
 ```
 
+### F-ADMIN-005A 更新 Work Item 時欄位超過長度限制
+
+```text
+Given
+  目前 mock current user 為 Admin
+  且目標 Work Item 存在
+When
+  使用者在編輯頁提交：
+    - title 超過 200 字
+    - 或 description 超過 2000 字
+Then
+  表單顯示驗證錯誤
+  不發送 update request
+```
+
 ### F-ADMIN-006 刪除 Work Item
 
 ```text
@@ -390,6 +466,7 @@ Then
   使用者確認後才送出 delete request
   成功後重新同步列表
   被刪除資料不再顯示
+  並顯示成功提示訊息
 ```
 
 ### F-ADMIN-006A 刪除失敗時保留目前列表
@@ -475,4 +552,3 @@ Then
 
 - 前台列表的排序 UI 最終採按鈕、下拉、或表頭切換。
 - admin 列表頁欄位是否需要額外顯示 description / updatedAt。
-- create / update 成功後是否顯示 toast，或只靠頁面導回表達成功。

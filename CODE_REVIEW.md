@@ -100,8 +100,10 @@
 - local UI state
   - checkbox 勾選
   - selected count
+  - success message
 
 勾選不會寫回後端，只存在這個頁面本地。
+但勾選後，對應列現在會用背景色標示 selected 狀態。
 
 送出 confirm 時，前端只把目前勾選的 ids 打出去。
 
@@ -114,11 +116,30 @@
         ├─ success
         │    ├─ invalidate 所有 list
         │    ├─ invalidate 受影響 detail
-        │    └─ clearSelection
+        │    ├─ clearSelection
+        │    └─ 顯示 success notice
         │
         └─ fail
              ├─ 顯示 error notice
              └─ 保留目前勾選
+```
+
+對於 `status === Confirmed` 的列，列表右側現在也會直接顯示 `Revert confirmation`。
+
+```text
+按列表列上的 Revert confirmation
+  │
+  ├─ window.confirm
+  │    ├─ false -> 直接結束
+  │    └─ true  -> POST /api/work-items/{id}/revert-confirmation
+  │
+  ├─ success
+  │    ├─ invalidate 所有 list
+  │    ├─ invalidate 目標 detail cache
+  │    └─ 顯示 success notice
+  │
+  └─ fail
+       └─ 顯示 error notice
 ```
 
 > 注意: 這頁顯示的 `status` 是 API 已經回傳好的目前使用者個人狀態，前端沒有自己再做一套 Pending fallback 邏輯。
@@ -156,17 +177,22 @@
 ```text
 按 Revert confirmation
   │
-  ├─ POST /api/work-items/{id}/revert-confirmation
+  ├─ window.confirm
+  │    ├─ false -> 直接結束
+  │    └─ true  -> POST /api/work-items/{id}/revert-confirmation
   │
   ├─ success
   │    ├─ invalidate 所有 list
-  │    └─ invalidate 目前 detail
+  │    ├─ invalidate 目前 detail
+  │    └─ 顯示 success notice
   │
   └─ fail
        └─ 顯示 error notice
 ```
 
 如果目前已經是 `Pending`，右側不會有按鈕，而是顯示提示文字。
+
+返回列表時，現在會保留原本帶進詳情頁的 `sortDirection` query。
 
 > 注意: 這頁的 `status` 依然只是目前 mock user 的個人狀態，不是全域 Work Item 狀態。
 
@@ -207,7 +233,8 @@ delete 現在先走一次原生 `window.confirm`。
   │
   ├─ success
   │    ├─ invalidate 所有 list
-  │    └─ remove 目標 detail cache
+  │    ├─ remove 目標 detail cache
+  │    └─ 顯示 success notice
   │
   └─ fail
        └─ 顯示 error notice
@@ -242,7 +269,7 @@ create mode 只初始化 create mutation，不會再去建立 edit 專用 query 
   ├─ WorkItemForm
   ├─ title 空白？-> 表單錯誤
   └─ 合法 -> POST /api/admin/work-items
-        └─ success -> 回 admin list
+        └─ success -> 回 admin list + success notice
 ```
 
 edit mode 會先用共享 detail API 讀既有資料，再把 `title` / `description` 帶進表單。
@@ -257,7 +284,7 @@ edit mode 會先用共享 detail API 讀既有資料，再把 `title` / `descrip
   │    └─ success -> 開表單
   │
   └─ 送出 PUT /api/admin/work-items/{id}
-       └─ success -> 回 admin list
+       └─ success -> 回 admin list + success notice
 ```
 
 這個表單目前只有一條前端驗證：
@@ -422,23 +449,26 @@ confirm
   -> invalidate all lists
   -> invalidate affected details
   -> clear selection
+  -> show success notice
 
 revert
   -> invalidate all lists
   -> invalidate current detail
+  -> show success notice
 
 create
   -> invalidate all lists
-  -> navigate /admin/work-items
+  -> navigate /admin/work-items + success notice
 
 update
   -> invalidate all lists
   -> invalidate current detail
-  -> navigate /admin/work-items
+  -> navigate /admin/work-items + success notice
 
 delete
   -> invalidate all lists
   -> remove current detail cache
+  -> show success notice
 ```
 
 這套規則現在主要靠 page flow tests 觀察，不是每一條都拆成獨立 hook test。
@@ -453,7 +483,10 @@ delete
 
 `WorkItemForm`
 - create / edit 共用
-- 只做 title required 驗證
+- 目前會做：
+  - title required
+  - title max 200
+  - description max 2000
 - 會在 `initialValues` 改變時重置表單值
 
 `StatePanel`
@@ -461,6 +494,9 @@ delete
 
 `ErrorNotice`
 - 統一 mutation / query 的細節錯誤顯示
+
+`SuccessNotice`
+- 統一 confirm / revert / create / update / delete 的成功提示
 
 ### 7. 自動化測試現況
 
@@ -470,10 +506,10 @@ delete
 - query key / header utility tests
 
 現在已有的自動化範圍包含：
-- 列表 loading / success / error / empty / confirm
-- 詳情 loading / not found / revert
-- admin forbidden / list / delete
-- admin create / edit
+- 列表 loading / success / error / empty / confirm / list revert / selected row
+- 詳情 loading / not found / revert / back-to-list query restore
+- admin forbidden / list / delete / success flash
+- admin create / edit / success flash
 - mock user cold start / 切換 user
 - query keys
 - mock auth headers

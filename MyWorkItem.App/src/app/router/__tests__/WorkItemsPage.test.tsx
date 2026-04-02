@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
 import { renderApp } from '../../../test/renderApp'
 import {
   problemResponse,
@@ -91,9 +92,13 @@ describe('WorkItemsPage', () => {
     await screen.findByText('Work Item 1')
 
     const checkbox = screen.getByLabelText('Select Work Item 1')
+    const row = screen.getByText('Work Item 1').closest('tr')
+
     fireEvent.click(checkbox)
+    expect(row).toHaveClass('bg-amber-50')
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirm selected' }))
+    await screen.findByText('Successfully confirmed 1 work item.')
     await screen.findByText('Confirmed')
 
     expect(checkbox).not.toBeChecked()
@@ -101,6 +106,35 @@ describe('WorkItemsPage', () => {
     expect(fetchMock.mock.calls[1]?.[1]?.body).toBe(
       JSON.stringify({ workItemIds: ['wi-1'] }),
     )
+  })
+
+  it('WorkItemsPage_WhenRevertSucceeds_UpdatesTheRowAndShowsSuccessMessage', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+    mockFetchSequence([
+      jsonResponse({
+        items: [{ id: 'wi-1', title: 'Work Item 1', status: 'Confirmed' }],
+      }),
+      jsonResponse({ workItemId: 'wi-1', status: 'Pending' }),
+      jsonResponse({
+        items: [{ id: 'wi-1', title: 'Work Item 1', status: 'Pending' }],
+      }),
+    ])
+
+    renderApp('/work-items', { currentUser: defaultMockUsers[0] })
+
+    const row = (await screen.findByText('Work Item 1')).closest('tr')
+    expect(row).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Revert confirmation' }))
+
+    await screen.findByText('Marked the selected work item back to pending.')
+    await screen.findAllByText('Pending')
+
+    expect(window.confirm).toHaveBeenCalledTimes(1)
+    expect(
+      screen.queryByRole('button', { name: 'Revert confirmation' }),
+    ).not.toBeInTheDocument()
   })
 
   it('WorkItemsPage_WhenConfirmFails_PreservesSelectionAndShowsError', async () => {

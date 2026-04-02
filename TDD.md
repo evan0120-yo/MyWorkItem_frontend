@@ -62,6 +62,16 @@ API 隔離策略：
 - E2E 瀏覽器自動化
 - 對第三方 library 行為本身的測試
 
+### 補充驗證層
+
+- 除了預設的 mock fetch page flow tests，另補一條 live API smoke test。
+- 這條 smoke test 的目的：
+  - 直接渲染前端頁面
+  - fetch 改打 live backend
+  - 把 user flow、admin CRUD 與真資料庫一起驗證
+- 這條 smoke test 不是完整瀏覽器 E2E。
+- CORS 仍需另外用真 preflight 驗證。
+
 ## 測試檔案結構
 
 ```text
@@ -84,6 +94,7 @@ Frontend/MyWorkItem.App/src
   - user list / detail
   - admin list
   - admin create / edit
+- live API smoke test 也放在 `app/router/__tests__`
 - feature 資料夾內的測試目前只保留：
   - query key / utility tests
   - auth mock tests
@@ -156,11 +167,15 @@ Frontend/MyWorkItem.App/src
 ├─ 進頁先顯示 loading
 ├─ 成功後顯示列表欄位
 ├─ API 回傳 Pending 時正確顯示 Pending
+├─ 勾選後該列會顯示 selected 狀態
 ├─ sortDirection 變更會觸發重新取數
 ├─ 成功但無資料時顯示 empty state
 ├─ 未勾選時 confirm 不可送出
 ├─ confirm 成功後會清空勾選並同步資料
-└─ confirm 失敗時顯示操作錯誤且保留勾選
+├─ confirm 成功後顯示 success message
+├─ 列表中 Confirmed 項目可執行 revert
+├─ revert 成功後列表重新顯示 Pending
+└─ confirm / revert 失敗時顯示操作錯誤且保留原狀態
 ```
 
 ### T-UI-002 WorkItemDetailPage
@@ -172,8 +187,11 @@ Frontend/MyWorkItem.App/src
 ├─ 成功時顯示 detail 欄位
 ├─ not found 時顯示 not found state
 ├─ status = Confirmed 時可執行 revert
+├─ revert 前需先經過確認步驟
 ├─ revert 成功後 detail 重新顯示 Pending
-└─ revert 失敗時顯示操作錯誤
+├─ revert 成功後顯示 success message
+├─ revert 失敗時顯示操作錯誤
+└─ 返回列表時保留 sortDirection query
 ```
 
 ### T-UI-003 AdminWorkItemsPage
@@ -187,6 +205,7 @@ Frontend/MyWorkItem.App/src
 ├─ 會以 desc 條件讀取列表
 ├─ delete 前需先經過確認步驟
 ├─ delete 成功後列表同步更新
+├─ delete 成功後顯示 success message
 ├─ delete 失敗時顯示操作錯誤
 └─ 非 Admin 進入時顯示 forbidden state
 ```
@@ -198,7 +217,7 @@ Frontend/MyWorkItem.App/src
 │
 ├─ title 空白時顯示表單錯誤
 ├─ 合法提交時送出 create mutation
-└─ 成功後導回 admin 列表
+└─ 成功後導回 admin 列表並顯示 success message
 ```
 
 ### T-UI-005 AdminWorkItemEditPage
@@ -210,7 +229,7 @@ Frontend/MyWorkItem.App/src
 ├─ 進頁先顯示 loading
 ├─ 目標不存在時顯示 not found state
 ├─ title 空白時顯示表單錯誤
-└─ 更新成功後導回 admin 列表
+└─ 更新成功後導回 admin 列表並顯示 success message
 ```
 
 ### T-UI-006 UserSwitcher
@@ -279,6 +298,7 @@ admin route 非 Admin
 
 create / update validation 失敗
   -> 顯示表單錯誤
+  -> 目前包含 title required / title max 200 / description max 2000
 
 confirm / revert 失敗
   -> 顯示操作錯誤訊息
@@ -348,6 +368,6 @@ delete 失敗
 
 ## 待確認但不阻塞本版
 
-- 是否在本版就補 E2E。
+- 是否在本版就補真正瀏覽器層 E2E。
 - delete 是否需要獨立確認彈窗測試。
 - 若之後加入 pagination / search，需補列表 query tests。

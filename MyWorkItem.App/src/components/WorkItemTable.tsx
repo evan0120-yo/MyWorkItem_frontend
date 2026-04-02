@@ -8,6 +8,7 @@ type WorkItemTableProps = {
   showActions?: boolean
   actionLabel?: string
   getActionLabel?: (item: WorkItemListItem) => string
+  shouldShowAction?: (item: WorkItemListItem) => boolean
   isActionDisabled?: (item: WorkItemListItem) => boolean
   onAction?: (workItemId: string) => void
   secondaryActionLabel?: string
@@ -29,6 +30,7 @@ export function WorkItemTable({
   showActions = false,
   actionLabel,
   getActionLabel,
+  shouldShowAction,
   isActionDisabled,
   onAction,
   secondaryActionLabel,
@@ -62,71 +64,81 @@ export function WorkItemTable({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
-              <tr key={item.id} className="border-t border-slate-900/8">
-                {onToggleSelection ? (
-                  <td className="px-4 py-4 align-middle">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(item.id)}
-                      onChange={() => onToggleSelection(item.id)}
-                      aria-label={`Select ${item.title}`}
-                      className="h-4 w-4 rounded border-slate-400"
-                    />
+            {items.map((item) => {
+              const isSelected = selectedIds.includes(item.id)
+              const canShowPrimaryAction = shouldShowAction?.(item) ?? true
+
+              return (
+                <tr
+                  key={item.id}
+                  className={`border-t border-slate-900/8 transition ${
+                    isSelected ? 'bg-amber-50' : 'bg-transparent'
+                  }`}
+                >
+                  {onToggleSelection ? (
+                    <td className="px-4 py-4 align-middle">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => onToggleSelection(item.id)}
+                        aria-label={`Select ${item.title}`}
+                        className="h-4 w-4 rounded border-slate-400"
+                      />
+                    </td>
+                  ) : null}
+                  <td className="px-4 py-4 text-sm text-[var(--muted-ink)]">
+                    <span className="font-mono text-xs">{item.id}</span>
                   </td>
-                ) : null}
-                <td className="px-4 py-4 text-sm text-[var(--muted-ink)]">
-                  <span className="font-mono text-xs">{item.id}</span>
-                </td>
-                <td className="px-4 py-4">
-                  {onTitleClick ? (
-                    <button
-                      type="button"
-                      onClick={() => onTitleClick(item.id)}
-                      className="text-left text-sm font-semibold text-[var(--page-ink)] underline-offset-4 hover:underline"
-                    >
-                      {item.title}
-                    </button>
-                  ) : (
-                    <span className="text-sm font-semibold text-[var(--page-ink)]">
-                      {item.title}
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-4">
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClassName(item.status)}`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
-                {showActions ? (
                   <td className="px-4 py-4">
-                    <div className="flex justify-end gap-2">
-                      {secondaryActionLabel && onSecondaryAction ? (
-                        <button
-                          type="button"
-                          onClick={() => onSecondaryAction(item.id)}
-                          className="rounded-full border border-slate-900/10 px-3 py-2 text-xs font-semibold text-[var(--page-ink)] transition hover:bg-slate-900 hover:text-white"
-                        >
-                          {secondaryActionLabel}
-                        </button>
-                      ) : null}
-                      {actionLabel && onAction ? (
-                        <button
-                          type="button"
-                          onClick={() => onAction(item.id)}
-                          disabled={isActionDisabled?.(item)}
-                          className="rounded-full border border-amber-700/20 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
-                        >
-                          {getActionLabel ? getActionLabel(item) : actionLabel}
-                        </button>
-                      ) : null}
-                    </div>
+                    {onTitleClick ? (
+                      <button
+                        type="button"
+                        onClick={() => onTitleClick(item.id)}
+                        className="text-left text-sm font-semibold text-[var(--page-ink)] underline-offset-4 hover:underline"
+                      >
+                        {item.title}
+                      </button>
+                    ) : (
+                      <span className="text-sm font-semibold text-[var(--page-ink)]">
+                        {item.title}
+                      </span>
+                    )}
                   </td>
-                ) : null}
-              </tr>
-            ))}
+                  <td className="px-4 py-4">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClassName(item.status)}`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  {showActions ? (
+                    <td className="px-4 py-4">
+                      <div className="flex justify-end gap-2">
+                        {secondaryActionLabel && onSecondaryAction ? (
+                          <button
+                            type="button"
+                            onClick={() => onSecondaryAction(item.id)}
+                            className="rounded-full border border-slate-900/10 px-3 py-2 text-xs font-semibold text-[var(--page-ink)] transition hover:bg-slate-900 hover:text-white"
+                          >
+                            {secondaryActionLabel}
+                          </button>
+                        ) : null}
+                        {actionLabel && onAction && canShowPrimaryAction ? (
+                          <button
+                            type="button"
+                            onClick={() => onAction(item.id)}
+                            disabled={isActionDisabled?.(item)}
+                            className="rounded-full border border-amber-700/20 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {getActionLabel ? getActionLabel(item) : actionLabel}
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  ) : null}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
