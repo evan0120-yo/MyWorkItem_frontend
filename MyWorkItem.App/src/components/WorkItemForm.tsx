@@ -46,13 +46,13 @@ export function WorkItemForm({
     const trimmedDescription = values.description.trim()
 
     if (!trimmedTitle) {
-      nextErrors.title = 'Title is required.'
+      nextErrors.title = '請輸入標題。'
     } else if (trimmedTitle.length > titleMaxLength) {
-      nextErrors.title = `Title must be ${titleMaxLength} characters or fewer.`
+      nextErrors.title = `標題長度不可超過 ${titleMaxLength} 個字元。`
     }
 
     if (trimmedDescription.length > descriptionMaxLength) {
-      nextErrors.description = `Description must be ${descriptionMaxLength} characters or fewer.`
+      nextErrors.description = `描述長度不可超過 ${descriptionMaxLength} 個字元。`
     }
 
     setFieldErrors(nextErrors)
@@ -78,18 +78,18 @@ export function WorkItemForm({
     >
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted-ink)]">
-          {mode === 'create' ? 'Create Work Item' : 'Edit Work Item'}
+          {mode === 'create' ? '新增工作項目' : '編輯工作項目'}
         </p>
         <h2 className="text-2xl font-semibold text-[var(--page-ink)]">
           {mode === 'create'
-            ? 'Add a new work item'
-            : 'Update the selected work item'}
+            ? '建立新的工作項目'
+            : '更新目前選定的工作項目'}
         </h2>
       </div>
 
       <div className="mt-6 space-y-5">
         <label className="block space-y-2">
-          <span className="text-sm font-semibold text-[var(--page-ink)]">Title</span>
+          <span className="text-sm font-semibold text-[var(--page-ink)]">標題</span>
           <input
             type="text"
             value={values.title}
@@ -101,7 +101,7 @@ export function WorkItemForm({
               }))
             }
             className="w-full rounded-2xl border border-slate-900/10 bg-white px-4 py-3 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
-            placeholder="Work Item title"
+            placeholder="請輸入工作項目標題"
           />
           {fieldErrors.title ? (
             <p className="text-sm text-amber-900">{fieldErrors.title}</p>
@@ -110,7 +110,7 @@ export function WorkItemForm({
 
         <label className="block space-y-2">
           <span className="text-sm font-semibold text-[var(--page-ink)]">
-            Description
+            描述
           </span>
           <textarea
             value={values.description}
@@ -123,7 +123,7 @@ export function WorkItemForm({
             }
             rows={6}
             className="w-full rounded-2xl border border-slate-900/10 bg-white px-4 py-3 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
-            placeholder="Describe the work item"
+            placeholder="請描述工作項目內容"
           />
           {fieldErrors.description ? (
             <p className="text-sm text-amber-900">{fieldErrors.description}</p>
@@ -139,11 +139,11 @@ export function WorkItemForm({
         >
           {isSubmitting
             ? mode === 'create'
-              ? 'Creating...'
-              : 'Updating...'
+              ? '建立中...'
+              : '更新中...'
             : mode === 'create'
-              ? 'Create'
-              : 'Save changes'}
+              ? '新增'
+              : '儲存變更'}
         </button>
       </div>
     </form>

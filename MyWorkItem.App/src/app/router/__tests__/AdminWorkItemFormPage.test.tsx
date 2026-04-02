@@ -20,10 +20,10 @@ describe('AdminWorkItemFormPage', () => {
 
     renderApp('/admin/work-items/new', { currentUser: defaultMockUsers[2] })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
-    await screen.findByText('Title is required.')
+    fireEvent.click(screen.getByRole('button', { name: '新增' }))
+    await screen.findByText('請輸入標題。')
 
-    expect(screen.getByText('Title is required.')).toBeInTheDocument()
+    expect(screen.getByText('請輸入標題。')).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -32,15 +32,15 @@ describe('AdminWorkItemFormPage', () => {
 
     renderApp('/admin/work-items/new', { currentUser: defaultMockUsers[2] })
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    fireEvent.change(screen.getByLabelText('標題'), {
       target: { value: 'A'.repeat(201) },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
-    await screen.findByText('Title must be 200 characters or fewer.')
+    fireEvent.click(screen.getByRole('button', { name: '新增' }))
+    await screen.findByText('標題長度不可超過 200 個字元。')
 
     expect(
-      screen.getByText('Title must be 200 characters or fewer.'),
+      screen.getByText('標題長度不可超過 200 個字元。'),
     ).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -61,19 +61,19 @@ describe('AdminWorkItemFormPage', () => {
 
     renderApp('/admin/work-items/new', { currentUser: defaultMockUsers[2] })
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    fireEvent.change(screen.getByLabelText('標題'), {
       target: { value: 'Created Item' },
     })
-    fireEvent.change(screen.getByLabelText('Description'), {
+    fireEvent.change(screen.getByLabelText('描述'), {
       target: { value: 'Created body' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
-    await screen.findByText('Work item admin list')
+    fireEvent.click(screen.getByRole('button', { name: '新增' }))
+    await screen.findByText('工作項目管理清單')
     await screen.findByText('Created Item')
-    await screen.findByText('Created the work item successfully.')
+    await screen.findByText('已成功新增工作項目。')
 
-    expect(screen.getByText('Work item admin list')).toBeInTheDocument()
+    expect(screen.getByText('工作項目管理清單')).toBeInTheDocument()
     expect(screen.getByText('Created Item')).toBeInTheDocument()
   })
 
@@ -87,7 +87,7 @@ describe('AdminWorkItemFormPage', () => {
     renderApp('/admin/work-items/wi-404/edit', { currentUser: defaultMockUsers[2] })
 
     expect(
-      await screen.findByText('This work item can no longer be edited.', {}, { timeout: 3000 }),
+      await screen.findByText('這筆工作項目已無法編輯。', {}, { timeout: 3000 }),
     ).toBeInTheDocument()
   })
 
@@ -98,14 +98,14 @@ describe('AdminWorkItemFormPage', () => {
 
     expect(await screen.findByDisplayValue('Work Item 1')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    fireEvent.change(screen.getByLabelText('標題'), {
       target: { value: '   ' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
-    await screen.findByText('Title is required.')
+    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }))
+    await screen.findByText('請輸入標題。')
 
-    expect(screen.getByText('Title is required.')).toBeInTheDocument()
+    expect(screen.getByText('請輸入標題。')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
@@ -116,15 +116,15 @@ describe('AdminWorkItemFormPage', () => {
 
     expect(await screen.findByDisplayValue('Work Item 1')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Description'), {
+    fireEvent.change(screen.getByLabelText('描述'), {
       target: { value: 'D'.repeat(2001) },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
-    await screen.findByText('Description must be 2000 characters or fewer.')
+    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }))
+    await screen.findByText('描述長度不可超過 2000 個字元。')
 
     expect(
-      screen.getByText('Description must be 2000 characters or fewer.'),
+      screen.getByText('描述長度不可超過 2000 個字元。'),
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -154,19 +154,19 @@ describe('AdminWorkItemFormPage', () => {
 
     renderApp('/admin/work-items/wi-1/edit', { currentUser: defaultMockUsers[2] })
 
-    expect(screen.getByText('Fetching work item for editing')).toBeInTheDocument()
+    expect(screen.getByText('正在載入待編輯的工作項目')).toBeInTheDocument()
     expect(await screen.findByDisplayValue('Work Item 1')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    fireEvent.change(screen.getByLabelText('標題'), {
       target: { value: 'Updated Item' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
-    await screen.findByText('Work item admin list')
+    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }))
+    await screen.findByText('工作項目管理清單')
     await screen.findByText('Updated Item')
-    await screen.findByText('Updated the work item successfully.')
+    await screen.findByText('已成功更新工作項目。')
 
-    expect(screen.getByText('Work item admin list')).toBeInTheDocument()
+    expect(screen.getByText('工作項目管理清單')).toBeInTheDocument()
     expect(screen.getByText('Updated Item')).toBeInTheDocument()
   })
 })

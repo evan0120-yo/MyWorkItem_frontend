@@ -14,8 +14,8 @@ describe('UserSwitcher', () => {
 
     renderApp('/work-items', { currentUser: null })
 
-    expect(screen.getByText('Fetching work items')).toBeInTheDocument()
-    await screen.findByText('There are no work items yet.')
+    expect(screen.getByText('正在取得工作項目')).toBeInTheDocument()
+    await screen.findByText('目前沒有工作項目。')
 
     const headers = getRequestHeaders(fetchMock)
 
@@ -52,6 +52,6 @@ describe('UserSwitcher', () => {
     expect(headers.get('X-Mock-User-Id')).toBe('admin-1')
     expect(headers.get('X-Mock-User-Name')).toBe('Admin')
     expect(headers.get('X-Mock-Role')).toBe('Admin')
-    expect(screen.getByRole('link', { name: 'Admin' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '管理區' })).toBeInTheDocument()
   })
 })

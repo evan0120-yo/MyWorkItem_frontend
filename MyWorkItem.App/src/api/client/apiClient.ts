@@ -54,8 +54,8 @@ export async function apiRequest<T>({
       signal,
     })
   } catch (error) {
-    throw new ApiClientError('Unable to reach the API right now.', {
-      detail: error instanceof Error ? error.message : 'Network request failed.',
+    throw new ApiClientError('目前無法連線到 API。', {
+      detail: error instanceof Error ? error.message : '網路請求失敗。',
     })
   }
 
@@ -63,7 +63,7 @@ export async function apiRequest<T>({
     const problem = await parseProblemDetails(response)
 
     throw new ApiClientError(
-      problem?.detail || problem?.title || 'Request failed.',
+      problem?.detail || problem?.title || '請求失敗。',
       problem || { status: response.status },
     )
   }
@@ -75,7 +75,7 @@ export async function apiRequest<T>({
   const contentType = response.headers.get('content-type') ?? ''
 
   if (!contentType.includes('application/json')) {
-    throw new ApiClientError('The API returned a non-JSON success response.', {
+    throw new ApiClientError('API 回傳了非 JSON 的成功回應。', {
       status: response.status,
     })
   }

@@ -35,7 +35,7 @@ function AdminWorkItemCreateContent({
     onSuccess: () =>
       navigate('/admin/work-items', {
         state: {
-          successMessage: 'Created the work item successfully.',
+          successMessage: '已成功新增工作項目。',
         },
       }),
   })
@@ -67,7 +67,7 @@ function AdminWorkItemEditContent({
     onSuccess: () =>
       navigate('/admin/work-items', {
         state: {
-          successMessage: 'Updated the work item successfully.',
+          successMessage: '已成功更新工作項目。',
         },
       }),
   })
@@ -75,9 +75,9 @@ function AdminWorkItemEditContent({
   if (detailQuery.isPending) {
     return (
       <StatePanel
-        eyebrow="Loading"
-        title="Fetching work item for editing"
-        description="The page is loading the shared detail API before opening the edit form."
+        eyebrow="載入中"
+        title="正在載入待編輯的工作項目"
+        description="頁面會先載入共用的詳情介面，再開啟編輯表單。"
       />
     )
   }
@@ -89,9 +89,9 @@ function AdminWorkItemEditContent({
     if (status === 404) {
       return (
         <StatePanel
-          eyebrow="Not Found"
-          title="This work item can no longer be edited."
-          description="The target work item does not exist anymore."
+          eyebrow="找不到資料"
+          title="這筆工作項目已無法編輯。"
+          description="目標工作項目已不存在。"
           tone="warning"
         />
       )
@@ -99,9 +99,9 @@ function AdminWorkItemEditContent({
 
     return (
       <StatePanel
-        eyebrow="Error"
-        title="Unable to open the edit form"
-        description="The shared detail API failed before the form could be initialized."
+        eyebrow="錯誤"
+        title="無法開啟編輯表單"
+        description="共用詳情介面在表單初始化前就失敗了。"
         tone="warning"
       />
     )
@@ -138,15 +138,14 @@ function AdminWorkItemFormLayout({
 
       <aside className="rounded-[28px] border border-slate-900/10 bg-white/80 p-6 shadow-[var(--shadow-soft)]">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted-ink)]">
-          Admin Notes
+          管理備註
         </p>
         <h3 className="mt-2 text-xl font-semibold text-[var(--page-ink)]">
-          Main data only
+          只編輯主資料
         </h3>
         <p className="mt-2 text-sm leading-7 text-[var(--muted-ink)]">
-          This form only edits the main work item fields. Even in edit mode, the
-          shared detail API may contain a personal status, but that value is not
-          part of the admin form.
+          這個表單只會編輯工作項目的主資料欄位。即使在編輯模式下，共用詳情
+          API 可能帶回個人狀態，但那不是管理表單的一部分。
         </p>
 
         <button
@@ -154,7 +153,7 @@ function AdminWorkItemFormLayout({
           onClick={() => navigate('/admin/work-items')}
           className="mt-6 inline-flex w-full justify-center rounded-full border border-slate-900/10 bg-white px-5 py-3 text-sm font-semibold text-[var(--page-ink)] transition hover:bg-slate-900 hover:text-white"
         >
-          Back to admin list
+          返回管理清單
         </button>
       </aside>
     </div>

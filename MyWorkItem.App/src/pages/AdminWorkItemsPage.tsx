@@ -40,7 +40,7 @@ export function AdminWorkItemsPage() {
     }
 
     const shouldDelete = window.confirm(
-      'Delete this work item? This will remove the item and its related personal statuses.',
+      '要刪除這筆工作項目嗎？這會一併移除相關的個人狀態。',
     )
 
     if (!shouldDelete) {
@@ -51,7 +51,7 @@ export function AdminWorkItemsPage() {
       setSuccessMessage(null)
       setPendingDeleteWorkItemId(workItemId)
       await deleteMutation.mutateAsync(workItemId)
-      setSuccessMessage('Deleted the work item successfully.')
+      setSuccessMessage('已成功刪除工作項目。')
     } catch {
       // Mutation state owns the UI error display.
     } finally {
@@ -65,15 +65,14 @@ export function AdminWorkItemsPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted-ink)]">
-              Admin
+              管理區
             </p>
             <h2 className="text-2xl font-semibold text-[var(--page-ink)]">
-              Work item admin list
+              工作項目管理清單
             </h2>
             <p className="text-sm leading-7 text-[var(--muted-ink)]">
-              The read side is intentionally shared with the user list API. The
-              status column still reflects the current admin user's personal
-              status, not a global admin-only flag.
+              這裡刻意沿用使用者清單介面。狀態欄顯示的仍是目前管理員的個人狀
+              態，不是額外的全域管理旗標。
             </p>
           </div>
 
@@ -82,7 +81,7 @@ export function AdminWorkItemsPage() {
             onClick={() => navigate('/admin/work-items/new')}
             className="inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
           >
-            Create work item
+            新增工作項目
           </button>
         </div>
       </section>
@@ -93,17 +92,17 @@ export function AdminWorkItemsPage() {
 
       {workItemsQuery.isPending ? (
         <StatePanel
-          eyebrow="Loading"
-          title="Fetching admin list"
-          description="The admin list reuses the shared work item read API and keeps the fixed desc ordering for Phase 1."
+          eyebrow="載入中"
+          title="正在取得管理清單"
+          description="管理清單會沿用共用的工作項目讀取介面，並在第一階段固定使用由新到舊排序。"
         />
       ) : null}
 
       {workItemsQuery.isError ? (
         <StatePanel
-          eyebrow="Error"
-          title="Unable to load the admin list"
-          description="The shared read API failed while loading the admin list."
+          eyebrow="錯誤"
+          title="無法載入管理清單"
+          description="載入管理清單時，共用讀取介面發生錯誤。"
           tone="warning"
           action={<ErrorNotice error={workItemsQuery.error} />}
         />
@@ -111,16 +110,16 @@ export function AdminWorkItemsPage() {
 
       {workItemsQuery.isSuccess && workItemsQuery.data.items.length === 0 ? (
         <StatePanel
-          eyebrow="Empty"
-          title="No work items exist yet."
-          description="Create the first work item from the admin flow."
+          eyebrow="無資料"
+          title="目前尚無工作項目。"
+          description="請從管理流程建立第一筆工作項目。"
           action={
             <button
               type="button"
               onClick={() => navigate('/admin/work-items/new')}
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
             >
-              Create the first item
+              建立第一筆項目
             </button>
           }
         />
@@ -130,13 +129,13 @@ export function AdminWorkItemsPage() {
         <WorkItemTable
           items={workItemsQuery.data.items}
           showActions
-          secondaryActionLabel="Edit"
+          secondaryActionLabel="編輯"
           onSecondaryAction={(workItemId) =>
             navigate(`/admin/work-items/${workItemId}/edit`)
           }
-          actionLabel="Delete"
+          actionLabel="刪除"
           getActionLabel={(item) =>
-            pendingDeleteWorkItemId === item.id ? 'Deleting...' : 'Delete'
+            pendingDeleteWorkItemId === item.id ? '刪除中...' : '刪除'
           }
           isActionDisabled={() => deleteMutation.isPending}
           onAction={handleDelete}

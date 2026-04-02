@@ -9,9 +9,9 @@ export function AdminRoute() {
   if (currentUser.role !== 'Admin') {
     return (
       <StatePanel
-        eyebrow="Forbidden"
-        title="This area is reserved for admin users."
-        description={`The current user cannot open ${location.pathname}. Switch the mock role to Admin and try again.`}
+        eyebrow="無權限"
+        title="此區域僅限管理員使用。"
+        description={`目前使用者無法開啟 ${location.pathname}。請切換為管理員角色後再試一次。`}
         tone="warning"
       />
     )

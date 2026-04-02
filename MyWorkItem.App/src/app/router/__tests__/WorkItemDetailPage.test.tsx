@@ -26,14 +26,14 @@ describe('WorkItemDetailPage', () => {
 
     renderApp('/work-items/wi-1', { currentUser: defaultMockUsers[0] })
 
-    expect(screen.getByText('Fetching work item detail')).toBeInTheDocument()
+    expect(screen.getByText('正在取得工作項目詳情')).toBeInTheDocument()
 
     expect(await screen.findByText('Work Item 1')).toBeInTheDocument()
     expect(screen.getByText('Detail body')).toBeInTheDocument()
-    expect(screen.getByText('Created At')).toBeInTheDocument()
-    expect(screen.getByText('Updated At')).toBeInTheDocument()
+    expect(screen.getByText('建立時間')).toBeInTheDocument()
+    expect(screen.getByText('更新時間')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Revert confirmation' }),
+      screen.getByRole('button', { name: '撤銷確認' }),
     ).toBeInTheDocument()
   })
 
@@ -47,7 +47,7 @@ describe('WorkItemDetailPage', () => {
     renderApp('/work-items/wi-404', { currentUser: defaultMockUsers[0] })
 
     expect(
-      await screen.findByText('This work item does not exist anymore.', {}, { timeout: 3000 }),
+      await screen.findByText('這筆工作項目已不存在。', {}, { timeout: 3000 }),
     ).toBeInTheDocument()
   })
 
@@ -64,17 +64,17 @@ describe('WorkItemDetailPage', () => {
 
     await screen.findByText('Work Item 1')
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Revert confirmation' }))
+      await user.click(screen.getByRole('button', { name: '撤銷確認' }))
     })
-    await screen.findByText('Marked the selected work item back to pending.')
-    await screen.findByText('This item is already pending for the current user.')
+    await screen.findByText('已將所選工作項目改回待確認。')
+    await screen.findByText('這筆工作項目對目前使用者已是待確認狀態。')
 
     expect(
-      screen.getByText('This item is already pending for the current user.'),
+      screen.getByText('這筆工作項目對目前使用者已是待確認狀態。'),
     ).toBeInTheDocument()
     expect(window.confirm).toHaveBeenCalledTimes(1)
     expect(
-      screen.queryByRole('button', { name: 'Revert confirmation' }),
+      screen.queryByRole('button', { name: '撤銷確認' }),
     ).not.toBeInTheDocument()
   })
 
@@ -83,22 +83,22 @@ describe('WorkItemDetailPage', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockFetchSequence([
       jsonResponse(createDetailResponse('Confirmed')),
-      problemResponse(404, 'Not Found', 'The confirmation record no longer exists.'),
+      problemResponse(404, 'Not Found', '確認紀錄已不存在。'),
     ])
 
     renderApp('/work-items/wi-1', { currentUser: defaultMockUsers[0] })
 
     await screen.findByText('Work Item 1')
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Revert confirmation' }))
+      await user.click(screen.getByRole('button', { name: '撤銷確認' }))
     })
-    await screen.findByText('The confirmation record no longer exists.')
+    await screen.findByText('確認紀錄已不存在。')
 
     expect(
-      screen.getByText('The confirmation record no longer exists.'),
+      screen.getByText('確認紀錄已不存在。'),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Revert confirmation' }),
+      screen.getByRole('button', { name: '撤銷確認' }),
     ).toBeInTheDocument()
   })
 
@@ -117,7 +117,7 @@ describe('WorkItemDetailPage', () => {
 
     await screen.findByText('Work Item 1')
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Back to list' }))
+      await user.click(screen.getByRole('button', { name: '返回清單' }))
     })
     await screen.findByRole('button', { name: 'Work Item 1' })
 

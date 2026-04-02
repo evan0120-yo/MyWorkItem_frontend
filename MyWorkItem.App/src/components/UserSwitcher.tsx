@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react'
+import { getRoleLabel } from '../app/displayText'
 import { useMockAuth } from '../features/auth-mock/MockAuthContext'
 
 export function UserSwitcher() {
@@ -14,7 +15,7 @@ export function UserSwitcher() {
 
   return (
     <label className="flex items-center gap-3 rounded-full border border-slate-900/10 bg-white/80 px-3 py-2 text-sm shadow-sm">
-      <span className="font-semibold text-[var(--muted-ink)]">User</span>
+      <span className="font-semibold text-[var(--muted-ink)]">使用者</span>
       <select
         value={currentUser.userId}
         onChange={handleChange}
@@ -22,7 +23,7 @@ export function UserSwitcher() {
       >
         {users.map((user) => (
           <option key={user.userId} value={user.userId}>
-            {user.userName} ({user.role})
+            {user.userName}（{getRoleLabel(user.role)}）
           </option>
         ))}
       </select>

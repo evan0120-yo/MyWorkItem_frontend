@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { getRoleLabel } from '../displayText'
 import { UserSwitcher } from '../../components/UserSwitcher'
 import { useMockAuth } from '../../features/auth-mock/MockAuthContext'
 
@@ -18,15 +19,14 @@ export function AppShell() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--muted-ink)]">
-                My Work Item
+                我的工作項目
               </p>
               <h1 className="text-3xl font-semibold tracking-tight text-[var(--page-ink)]">
-                Work items, personal status, and admin actions in one SPA
+                在同一個單頁應用程式中處理工作項目、個人狀態與管理操作
               </h1>
               <p className="max-w-3xl text-sm leading-7 text-[var(--muted-ink)]">
-                The user flow reads personal status from shared APIs. The admin
-                flow reuses those read APIs and writes through dedicated admin
-                mutations.
+                使用者流程會透過共用介面讀取個人狀態；管理流程則沿用讀取介面，
+                並透過專用的管理操作寫入資料。
               </p>
             </div>
 
@@ -34,25 +34,26 @@ export function AppShell() {
               <div className="flex items-center gap-3">
                 <UserSwitcher />
                 <span className="rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                  {currentUser.role}
+                  {getRoleLabel(currentUser.role)}
                 </span>
               </div>
               <p className="text-sm text-[var(--muted-ink)]">
-                Current user: <span className="font-semibold">{currentUser.userName}</span>
+                目前使用者：{' '}
+                <span className="font-semibold">{currentUser.userName}</span>
               </p>
             </div>
           </div>
 
           <nav className="mt-6 flex flex-wrap gap-2">
             <NavLink to="/work-items" className={({ isActive }) => navClassName(isActive)}>
-              Work Items
+              工作項目
             </NavLink>
             {currentUser.role === 'Admin' ? (
               <NavLink
                 to="/admin/work-items"
                 className={({ isActive }) => navClassName(isActive)}
               >
-                Admin
+                管理區
               </NavLink>
             ) : null}
           </nav>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { getStatusLabel } from '../app/displayText'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { StatePanel } from '../components/StatePanel'
 import { SuccessNotice } from '../components/SuccessNotice'
@@ -30,7 +31,7 @@ export function WorkItemDetailPage() {
 
   async function handleRevert() {
     const shouldRevert = window.confirm(
-      "Mark this work item back to 'Pending' for the current user?",
+      '要將這筆工作項目對目前使用者改回待確認嗎？',
     )
 
     if (!shouldRevert) {
@@ -40,7 +41,7 @@ export function WorkItemDetailPage() {
     try {
       setSuccessMessage(null)
       await revertMutation.mutateAsync(id)
-      setSuccessMessage('Marked the selected work item back to pending.')
+      setSuccessMessage('已將所選工作項目改回待確認。')
     } catch {
       // Mutation state owns the UI error display.
     }
@@ -49,9 +50,9 @@ export function WorkItemDetailPage() {
   if (detailQuery.isPending) {
     return (
       <StatePanel
-        eyebrow="Loading"
-        title="Fetching work item detail"
-        description="The detail page is waiting for the latest item data and the current user's personal status."
+        eyebrow="載入中"
+        title="正在取得工作項目詳情"
+        description="詳情頁正在等待最新的工作項目資料與目前使用者的個人狀態。"
       />
     )
   }
@@ -63,9 +64,9 @@ export function WorkItemDetailPage() {
     if (status === 404) {
       return (
         <StatePanel
-          eyebrow="Not Found"
-          title="This work item does not exist anymore."
-          description="The requested item could not be found. It may have been deleted from the admin side."
+          eyebrow="找不到資料"
+          title="這筆工作項目已不存在。"
+          description="找不到你要求的工作項目，它可能已經被管理端刪除。"
           tone="warning"
           action={
             <button
@@ -73,7 +74,7 @@ export function WorkItemDetailPage() {
               onClick={() => navigate(returnPath)}
               className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
             >
-              Back to list
+              返回清單
             </button>
           }
         />
@@ -82,9 +83,9 @@ export function WorkItemDetailPage() {
 
     return (
       <StatePanel
-        eyebrow="Error"
-        title="Unable to load this work item"
-        description="The detail request failed. Review the API response below."
+        eyebrow="錯誤"
+        title="無法載入這筆工作項目"
+        description="詳情請求失敗，請先查看下方回應內容。"
         tone="warning"
         action={<ErrorNotice error={detailQuery.error} />}
       />
@@ -97,7 +98,7 @@ export function WorkItemDetailPage() {
     <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
       <section className="rounded-[28px] border border-slate-900/10 bg-[var(--panel-bg)] p-6 shadow-[var(--shadow-soft)]">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted-ink)]">
-          Work Item Detail
+          工作項目詳情
         </p>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -115,21 +116,21 @@ export function WorkItemDetailPage() {
                 : 'bg-stone-200 text-stone-700'
             }`}
           >
-            {item.status}
+            {getStatusLabel(item.status)}
           </span>
         </div>
 
         <div className="mt-6 rounded-[24px] bg-white/80 p-5">
-          <p className="text-sm font-semibold text-[var(--page-ink)]">Description</p>
+          <p className="text-sm font-semibold text-[var(--page-ink)]">描述</p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[var(--muted-ink)]">
-            {item.description || 'No description provided.'}
+            {item.description || '未提供描述。'}
           </p>
         </div>
 
         <dl className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl bg-white/70 p-4">
             <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-ink)]">
-              Created At
+              建立時間
             </dt>
             <dd className="mt-2 text-sm font-semibold text-[var(--page-ink)]">
               {formatDateTime(item.createdAt)}
@@ -137,7 +138,7 @@ export function WorkItemDetailPage() {
           </div>
           <div className="rounded-2xl bg-white/70 p-4">
             <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-ink)]">
-              Updated At
+              更新時間
             </dt>
             <dd className="mt-2 text-sm font-semibold text-[var(--page-ink)]">
               {formatDateTime(item.updatedAt)}
@@ -148,14 +149,14 @@ export function WorkItemDetailPage() {
 
       <aside className="rounded-[28px] border border-slate-900/10 bg-white/80 p-6 shadow-[var(--shadow-soft)]">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted-ink)]">
-          Current User Action
+          目前使用者操作
         </p>
         <h3 className="mt-2 text-xl font-semibold text-[var(--page-ink)]">
-          Personal status control
+          個人狀態控制
         </h3>
         <p className="mt-2 text-sm leading-7 text-[var(--muted-ink)]">
-          This page only shows the current mock user's personal status. Revert
-          does not touch the global work item data.
+          此頁只顯示目前模擬使用者的個人狀態。撤銷確認不會變更全域的工作
+          項目資料。
         </p>
 
         {successMessage ? (
@@ -177,11 +178,11 @@ export function WorkItemDetailPage() {
             disabled={revertMutation.isPending}
             className="mt-6 inline-flex w-full justify-center rounded-full bg-amber-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {revertMutation.isPending ? 'Reverting...' : 'Revert confirmation'}
+            {revertMutation.isPending ? '撤銷中...' : '撤銷確認'}
           </button>
         ) : (
           <div className="mt-6 rounded-2xl border border-slate-900/10 bg-stone-100 px-4 py-4 text-sm text-[var(--muted-ink)]">
-            This item is already pending for the current user.
+            這筆工作項目對目前使用者已是待確認狀態。
           </div>
         )}
 
@@ -190,7 +191,7 @@ export function WorkItemDetailPage() {
           onClick={() => navigate(returnPath)}
           className="mt-3 inline-flex w-full justify-center rounded-full border border-slate-900/10 bg-white px-5 py-3 text-sm font-semibold text-[var(--page-ink)] transition hover:bg-slate-900 hover:text-white"
         >
-          Back to list
+          返回清單
         </button>
       </aside>
     </div>

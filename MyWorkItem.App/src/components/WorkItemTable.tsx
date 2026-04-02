@@ -1,3 +1,4 @@
+import { getStatusLabel } from '../app/displayText'
 import type { WorkItemListItem } from '../types/work-item'
 
 type WorkItemTableProps = {
@@ -52,15 +53,15 @@ export function WorkItemTable({
                     type="checkbox"
                     checked={allSelected}
                     onChange={() => onToggleSelectAll?.()}
-                    aria-label="Select all work items"
+                    aria-label="選取全部工作項目"
                     className="h-4 w-4 rounded border-slate-400"
                   />
                 </th>
               ) : null}
-              <th className="px-4 py-4">ID</th>
-              <th className="px-4 py-4">Title</th>
-              <th className="px-4 py-4">Status</th>
-              {showActions ? <th className="px-4 py-4 text-right">Actions</th> : null}
+              <th className="px-4 py-4">編號</th>
+              <th className="px-4 py-4">標題</th>
+              <th className="px-4 py-4">狀態</th>
+              {showActions ? <th className="px-4 py-4 text-right">操作</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -81,7 +82,7 @@ export function WorkItemTable({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => onToggleSelection(item.id)}
-                        aria-label={`Select ${item.title}`}
+                        aria-label={`選取 ${item.title}`}
                         className="h-4 w-4 rounded border-slate-400"
                       />
                     </td>
@@ -108,7 +109,7 @@ export function WorkItemTable({
                     <span
                       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClassName(item.status)}`}
                     >
-                      {item.status}
+                      {getStatusLabel(item.status)}
                     </span>
                   </td>
                   {showActions ? (

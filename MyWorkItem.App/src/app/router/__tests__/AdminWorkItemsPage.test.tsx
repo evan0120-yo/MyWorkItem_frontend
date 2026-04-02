@@ -16,7 +16,7 @@ describe('AdminWorkItemsPage', () => {
     renderApp('/admin/work-items', { currentUser: defaultMockUsers[0] })
 
     expect(
-      await screen.findByText('This area is reserved for admin users.'),
+      await screen.findByText('此區域僅限管理員使用。'),
     ).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -30,11 +30,11 @@ describe('AdminWorkItemsPage', () => {
 
     renderApp('/admin/work-items', { currentUser: defaultMockUsers[2] })
 
-    expect(screen.getByText('Fetching admin list')).toBeInTheDocument()
+    expect(screen.getByText('正在取得管理清單')).toBeInTheDocument()
     expect(await screen.findByText('Work Item 2')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Create work item' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '新增工作項目' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '編輯' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '刪除' })).toBeInTheDocument()
     expect(fetchMock.mock.calls[0]?.[0]).toContain('/api/work-items?sortDirection=desc')
   })
 
@@ -62,7 +62,7 @@ describe('AdminWorkItemsPage', () => {
     expect(firstRow).not.toBeNull()
 
     await act(async () => {
-      await user.click(within(firstRow!).getByRole('button', { name: 'Delete' }))
+      await user.click(within(firstRow!).getByRole('button', { name: '刪除' }))
     })
     await waitFor(() => {
       expect(screen.queryByText('Work Item 1')).not.toBeInTheDocument()
@@ -70,7 +70,7 @@ describe('AdminWorkItemsPage', () => {
 
     expect(screen.getByText('Work Item 2')).toBeInTheDocument()
     expect(
-      screen.getByText('Deleted the work item successfully.'),
+      screen.getByText('已成功刪除工作項目。'),
     ).toBeInTheDocument()
     expect(window.confirm).toHaveBeenCalledTimes(1)
   })
@@ -82,7 +82,7 @@ describe('AdminWorkItemsPage', () => {
       jsonResponse({
         items: [{ id: 'wi-1', title: 'Work Item 1', status: 'Pending' }],
       }),
-      problemResponse(404, 'Not Found', 'The work item was already deleted.'),
+      problemResponse(404, 'Not Found', '這筆工作項目已被刪除。'),
     ])
 
     renderApp('/admin/work-items', { currentUser: defaultMockUsers[2] })
@@ -91,12 +91,12 @@ describe('AdminWorkItemsPage', () => {
     expect(row).not.toBeNull()
 
     await act(async () => {
-      await user.click(within(row!).getByRole('button', { name: 'Delete' }))
+      await user.click(within(row!).getByRole('button', { name: '刪除' }))
     })
-    await screen.findByText('The work item was already deleted.')
+    await screen.findByText('這筆工作項目已被刪除。')
 
     expect(
-      screen.getByText('The work item was already deleted.'),
+      screen.getByText('這筆工作項目已被刪除。'),
     ).toBeInTheDocument()
     expect(screen.getByText('Work Item 1')).toBeInTheDocument()
   })
